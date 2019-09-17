@@ -26,9 +26,10 @@ fetch(
   }
 ).then(function(response) {
   if (response.ok) {
-    console.log("YES!");
-    console.log(response);
+    return response.json();
   } else {
     console.log("NO!");
   }
+}).then(function(myJson) {
+  console.log(JSON.stringify(myJson));
 });
