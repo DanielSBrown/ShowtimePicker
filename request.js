@@ -10,6 +10,7 @@ function getLocation(callback) {
             navigator.geolocation.getCurrentPosition(
                 function(position){
                   document.getElementById("dataDump").innerHTML += "" + position.coords.latitude + "; " + position.coords.longitude + "<br><ul>"
+                  document.getElementById("cinemaDump").innerHTML += "" + position.coords.latitude + "; " + position.coords.longitude + "<br><ul>"
 
                     resolve("" + position.coords.latitude + "; " + position.coords.longitude)
                 }
@@ -21,45 +22,68 @@ function getLocation(callback) {
 
     return promise;
 }
-
+var location;
 var locationPromise = getLocation();
 locationPromise
-      .then(function(loc) { console.log(loc); })
-      .catch(function(err) { console.log("No location"); });
-
-      console.log(locationPromise);
-
-locationPromise.then(function() {
-  console.log("hehehe");
-  var request = new XMLHttpRequest();
-  var url = config.ENDPOINT + 'filmsNowShowing/?n=10';
-  fetch(
-    url, {
-      method: "GET",
-      headers: {
-        'Authorization' : config.AUTHORIZATION,
-        'client' : config.USERNAME,
-        'x-api-key' : config.MY_KEY,
-        'territory' : config.TERRITORY,
-        'api-version' : 'v200',
-        'geolocation' : locationPromise,
-        'device-datetime' : dateTime
-      }
+      .then(function(loc) {
+console.log(loc)
+var request = new XMLHttpRequest();
+var url = config.ENDPOINT + 'filmsNowShowing/?n=10';
+fetch(
+  url, {
+    method: "GET",
+    headers: {
+      'Authorization' : config.AUTHORIZATION,
+      'client' : config.USERNAME,
+      'x-api-key' : config.MY_KEY,
+      'territory' : config.TERRITORY,
+      'api-version' : 'v200',
+      'geolocation' : loc,
+      'device-datetime' : dateTime
     }
-  ).then(function(response) {
-    if (response.ok) {
-      return response.json();
-    } else {
-      console.log("NO!");
-    }
-  }).then(function(myJson) {
-    var json = JSON.stringify(myJson);
-    console.log("JSON: " + json)
-    for (var i = 0; i < 10; i++) {
-      console.log(myJson.films[i].film_name);
-      document.getElementById("dataDump").innerHTML += "<li>" + myJson.films[i].film_name + "</li>";
-    }
-    document.getElementById("dataDump").innerHTML += "</ul>"
-  });
-
+  }
+).then(function(response) {
+  if (response.ok) {
+    return response.json();
+  } else {
+    console.log("NO!");
+  }
+}).then(function(myJson) {
+  for (var i = 0; i < 10; i++) {
+    document.getElementById("dataDump").innerHTML += "<li>" + myJson.films[i].film_name + "</li>";
+  }
+  document.getElementById("dataDump").innerHTML += "</ul>"
 });
+var request = new XMLHttpRequest();
+var url = config.ENDPOINT + 'cinemasNearby/?n=5';
+console.log(locationPromise)
+fetch(
+  url, {
+    method: "GET",
+    headers: {
+      'Authorization' : config.AUTHORIZATION,
+      'client' : config.USERNAME,
+      'x-api-key' : config.MY_KEY,
+      'territory' : config.TERRITORY,
+      'api-version' : 'v200',
+      'geolocation' : loc,
+      'device-datetime' : dateTime
+    }
+  }
+).then(function(response) {
+  if (response.ok) {
+    return response.json();
+  } else {
+console.log("Could not get theaters near you")
+  }
+}).then(function(myJson) {
+  for (var i = 0; i < 5; i++) {
+    document.getElementById("cinemaDump").innerHTML += "<li>" + myJson.cinemas[i].cinema_name + "</li>";
+
+  }
+  document.getElementById("cinemaDump").innerHTML += "</ul>"
+
+})
+
+       })
+      .catch(function(err) { console.log("No location"); });
